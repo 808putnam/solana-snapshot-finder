@@ -17,7 +17,8 @@ RUN apt-get update \
 WORKDIR /solana
 USER user
 
-COPY --chown=user . .
+COPY --chown=user solana-snapshot-finder/requirements.txt   .
+COPY --chown=user solana-snapshot-finder/snapshot-finder.py .
 
 RUN python3 -m venv venv \
     && source ./venv/bin/activate \
