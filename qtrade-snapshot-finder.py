@@ -417,10 +417,23 @@ def main_worker():
 
                     else:
                         best_snapshot_node = f'http://{rpc_node["snapshot_address"]}{path}'
-                        # qtrade
-                        print(path)
+
+                        ############################
+                        # For qtrade: Output to bash
+                        ############################
+                        # print(path)
+
                     logger.info(f'Downloading {best_snapshot_node} snapshot to {SNAPSHOT_PATH}')
                     download(url=best_snapshot_node)
+
+                    ################################################
+                    # For qtrade: Post-process using our bash script
+                    ################################################
+                    local_snapshot_path = f'/solana/snapshot{path}'
+                    local_run_path = f'/solana/create-qtrade-snapshot.sh {local_snapshot_path}'
+                    logger.info(f'Local run path: {local_run_path}')
+                    print(subprocess.run([local_run_path], shell=True))
+
                 return 0
 
             elif i > num_of_rpc_to_check:
