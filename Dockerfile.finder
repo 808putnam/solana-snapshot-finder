@@ -17,7 +17,7 @@ RUN apt-get update \
 WORKDIR /solana
 USER user
 
-COPY --chown=user . .
+COPY --chown=user qtrade-snapshot/solana-snapshot-finder/* .
 
 RUN python3 -m venv venv \
     && source ./venv/bin/activate \
