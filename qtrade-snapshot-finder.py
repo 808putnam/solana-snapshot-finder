@@ -1,4 +1,5 @@
-from distutils.log import debug
+# qtrade: comment this out to get debug launches to run
+# from distutils.log import debug
 import os
 import glob
 import requests
@@ -73,6 +74,15 @@ FULL_LOCAL_SNAPSHOTS = []
 # skip servers that do not fit the filters so as not to check them again
 unsuitable_servers = set()
 # Configure Logging
+# qtrade: Needed to move this to top so we can create snapshot folder if necessary for logging.
+try:
+    f_ = open(f'{SNAPSHOT_PATH}/write_perm_test', 'w')
+    f_.close()
+    os.remove(f'{SNAPSHOT_PATH}/write_perm_test')
+except IOError:
+    # logger.error(f'\nCheck {SNAPSHOT_PATH=} and permissions')
+    Path(SNAPSHOT_PATH).mkdir(parents=True, exist_ok=True)
+
 logging.getLogger('urllib3').setLevel(logging.WARNING)
 if args.verbose:
     logging.basicConfig(
@@ -471,13 +481,14 @@ logger.info(f'{RPC=}\n'
       f'{WITH_PRIVATE_RPC=}\n'
       f'{SORT_ORDER=}')
 
-try:
-    f_ = open(f'{SNAPSHOT_PATH}/write_perm_test', 'w')
-    f_.close()
-    os.remove(f'{SNAPSHOT_PATH}/write_perm_test')
-except IOError:
-    logger.error(f'\nCheck {SNAPSHOT_PATH=} and permissions')
-    Path(SNAPSHOT_PATH).mkdir(parents=True, exist_ok=True)
+# qtrade: Moving to top before we setup logging
+# try:
+#     f_ = open(f'{SNAPSHOT_PATH}/write_perm_test', 'w')
+#     f_.close()
+#     os.remove(f'{SNAPSHOT_PATH}/write_perm_test')
+# except IOError:
+#     logger.error(f'\nCheck {SNAPSHOT_PATH=} and permissions')
+#     Path(SNAPSHOT_PATH).mkdir(parents=True, exist_ok=True)
 
 wget_path = shutil.which("wget")
 

@@ -1,0 +1,3 @@
+# Not sure why we have to add this entry at this level.
+# Does not work in root .gitignore file.
+.venv/
