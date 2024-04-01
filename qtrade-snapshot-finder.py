@@ -44,6 +44,16 @@ parser.add_argument('-b', '--blacklist', default='', type=str, help='If the same
                     ' Specify either the number of the slot you want to exclude, or the hash of the archive name. '
                     'You can specify several, separated by commas. Example: -b 135501350,135501360 or --blacklist 135501350,some_hash')
 parser.add_argument("-v", "--verbose", help="increase output verbosity to DEBUG", action="store_true")
+############################
+# For qtrade: Allows for local debug runs where we debugging across solana-snapshot-finder and solana-snapshot-gpa.
+#             Container setups have all artifacts in the same folder (/solana).
+############################
+parser.add_argument('--script_path', type=str, default="./create-qtrade-snapshot.sh", help='The location where the create-qtrade-snapshot.sh script can be found (absolute path).'
+                                                                     ' Example: {workspaceFolder}/qtrade-snapshot/solana-snapshot-gpa')
+parser.add_argument('--solana_snapshot_gpa_path', type=str, default="./solana-snapshot-gpa", help='The location where the solana-snapshot-gpa can be found (absolute path).'
+                                                                     ' Example: {workspaceFolder}/qtrade-snapshot/solana-snapshot-gpa/target/debug')
+parser.add_argument('--debug_exit_first_launch', default="false", type=str, help='Signal to create-qtrade-snapshot.sh to exit before first launch of solana-snapshot-gpa.')
+parser.add_argument('--debug_exit_second_launch', default="false", type=str, help='Signal to create-qtrade-snapshot.sh to exit before second launch of solana-snapshot-gpa.')
 args = parser.parse_args()
 
 DEFAULT_HEADERS = {"Content-Type": "application/json"}
@@ -64,6 +74,13 @@ SORT_ORDER = args.sort_order
 BLACKLIST = str(args.blacklist).split(",")
 FULL_LOCAL_SNAP_SLOT = 0
 
+############################
+# For qtrade: Allows for local debug runs.
+#             Container setups have all artifacts in the same folder (/solana).
+############################
+SCRIPT_PATH = args.script_path
+SOLANA_SNAPSHOT_GPA_PATH = args.solana_snapshot_gpa_path
+
 current_slot = 0
 DISCARDED_BY_ARCHIVE_TYPE = 0
 DISCARDED_BY_LATENCY = 0
@@ -73,8 +90,10 @@ DISCARDED_BY_TIMEOUT = 0
 FULL_LOCAL_SNAPSHOTS = []
 # skip servers that do not fit the filters so as not to check them again
 unsuitable_servers = set()
+############################
+# For qtrade: Needed to move this to top so we can create snapshot folder if necessary for logging.
+############################
 # Configure Logging
-# qtrade: Needed to move this to top so we can create snapshot folder if necessary for logging.
 try:
     f_ = open(f'{SNAPSHOT_PATH}/write_perm_test', 'w')
     f_.close()
@@ -439,8 +458,7 @@ def main_worker():
                     ################################################
                     # For qtrade: Post-process using our bash script
                     ################################################
-                    local_snapshot_path = f'/solana/snapshot{path}'
-                    local_run_path = f'/solana/create-qtrade-snapshot.sh {local_snapshot_path}'
+                    local_run_path = f'{SCRIPT_PATH} --snapshot_folder={SNAPSHOT_PATH} --snapshot={path} --snapshot_path={SNAPSHOT_PATH}{path} --slot={current_slot} --solana_snapshot_gpa_path={SOLANA_SNAPSHOT_GPA_PATH} --debug_exit_first_launch={args.debug_exit_first_launch} --debug_exit_second_launch={args.debug_exit_second_launch}'
                     logger.info(f'Local run path: {local_run_path}')
                     print(subprocess.run([local_run_path], shell=True))
 
