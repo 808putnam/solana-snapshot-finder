@@ -457,12 +457,18 @@ def main_worker():
 
                     ################################################
                     # For qtrade: Post-process using our bash script
+                    #             Notes:
+                    #             1. We are only processing full snapshots.
+                    #             2. We are dependent on a file naming for path using "-" as separators to extract slot number.
+                    #                Example: snapshot-262051768-BYxaJ61HLgy5h3KBqY27YaLJuyg7ad7zb3MxYWyn6Tam.tar.bz2
                     ################################################
-                    local_run_path = f'{SCRIPT_PATH} --snapshot_folder={SNAPSHOT_PATH} --snapshot={path} --snapshot_path={SNAPSHOT_PATH}{path} --slot={current_slot} --solana_snapshot_gpa_path={SOLANA_SNAPSHOT_GPA_PATH} --debug_exit_first_launch={args.debug_exit_first_launch} --debug_exit_second_launch={args.debug_exit_second_launch}'
-                    logger.info(f'Local run path: {local_run_path}')
-                    print(subprocess.run([local_run_path], shell=True))
+                    if 'incremental' not in path:
+                        slot_in_path = path.split("-")[1]
+                        local_run_path = f'{SCRIPT_PATH} --snapshot_folder={SNAPSHOT_PATH} --snapshot={path} --snapshot_path={SNAPSHOT_PATH}{path} --slot={slot_in_path} --solana_snapshot_gpa_path={SOLANA_SNAPSHOT_GPA_PATH} --debug_exit_first_launch={args.debug_exit_first_launch} --debug_exit_second_launch={args.debug_exit_second_launch}'
+                        logger.info(f'Local run path: {local_run_path}')
+                        print(subprocess.run([local_run_path], shell=True))
 
-                return 0
+                    return 0
 
             elif i > num_of_rpc_to_check:
                 logger.info(f'The limit on the number of RPC nodes from'
